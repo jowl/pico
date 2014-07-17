@@ -9,10 +9,10 @@ import (
 )
 
 type TimeInfo struct {
-	DateTime          time.Time
-	DateTimeOriginal  time.Time
-	DateTimeDigitized time.Time
-	ModTime           time.Time
+	DateTime          *time.Time
+	DateTimeOriginal  *time.Time
+	DateTimeDigitized *time.Time
+	ModTime           *time.Time
 }
 
 type Picture struct {
@@ -21,20 +21,20 @@ type Picture struct {
 }
 
 type PictureBuilder struct {
-	Input           chan string
-	Output          chan *Picture
-	SelectTimestamp func(ts *TimeInfo) *time.Time
+	input           chan string
+	output          chan *Picture
+	selectTimestamp func(ts *TimeInfo) *time.Time
 }
 
 func (p PictureBuilder) Run() {
-	for path := range p.Input {
+	for path := range p.input {
 		timeInfo := extractTimeInfo(path)
-		p.Output <- &Picture{
+		p.output <- &Picture{
 			Path:      path,
-			Timestamp: p.SelectTimestamp(timeInfo),
+			Timestamp: p.selectTimestamp(timeInfo),
 		}
 	}
-	close(p.Output)
+	close(p.output)
 }
 
 func extractTimeInfo(path string) (timeInfo *TimeInfo) {
@@ -46,20 +46,21 @@ func extractTimeInfo(path string) (timeInfo *TimeInfo) {
 	timeInfo = new(TimeInfo)
 	if exifData, err := exif.Decode(f); err == nil {
 		if exifDateTime, err := exifData.Get(exif.DateTime); err == nil {
-			timeInfo.DateTime = *parseExifDateTime(exifDateTime.StringVal())
+			timeInfo.DateTime = parseExifDateTime(exifDateTime.StringVal())
 		}
 
 		if exifDateTimeOriginal, err := exifData.Get(exif.DateTimeOriginal); err == nil {
-			timeInfo.DateTimeOriginal = *parseExifDateTime(exifDateTimeOriginal.StringVal())
+			timeInfo.DateTimeOriginal = parseExifDateTime(exifDateTimeOriginal.StringVal())
 		}
 
 		if exifDateTimeDigitized, err := exifData.Get(exif.DateTimeDigitized); err == nil {
-			timeInfo.DateTimeDigitized = *parseExifDateTime(exifDateTimeDigitized.StringVal())
+			timeInfo.DateTimeDigitized = parseExifDateTime(exifDateTimeDigitized.StringVal())
 		}
 	}
 
 	if fileInfo, err := f.Stat(); err == nil {
-		timeInfo.ModTime = fileInfo.ModTime()
+		modTime := fileInfo.ModTime()
+		timeInfo.ModTime = &modTime
 	}
 
 	return

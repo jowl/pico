@@ -9,19 +9,19 @@ import (
 )
 
 type Organizer struct {
-	Input         chan *Picture
-	Root          string
-	DryRun        bool
+	input         chan *Picture
+	root          string
+	dryRun        bool
 	done          chan bool
-	TimestampPath func(t *time.Time) string
+	timestampPath func(t *time.Time) string
 }
 
-func (o *Organizer) Run() {
-	for picture := range o.Input {
-		dir := o.TimestampPath(picture.Timestamp)
+func (o Organizer) Run() {
+	for picture := range o.input {
+		dir := o.timestampPath(picture.Timestamp)
 		fname := path.Base(picture.Path)
-		fullPath := path.Join(o.Root, dir, fname)
-		if o.DryRun {
+		fullPath := path.Join(o.root, dir, fname)
+		if o.dryRun {
 			printMove(picture.Path, fullPath)
 		} else {
 			doMove(picture.Path, fullPath)
@@ -30,7 +30,7 @@ func (o *Organizer) Run() {
 	o.done <- true
 }
 
-func (o *Organizer) Await() {
+func (o Organizer) Await() {
 	<-o.done
 }
 

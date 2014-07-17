@@ -36,26 +36,26 @@ func New() *Pico {
 	return pico
 }
 
-func (p *Pico) Run(args []string) {
+func (p Pico) Run(args []string) {
 	p.app.Run(args)
 }
 
-func (p *Pico) run(c *cli.Context) {
+func (p Pico) run(c *cli.Context) {
 	input := make(chan string)
 	pictures := make(chan *Picture)
 
 	pictureBuilder := &PictureBuilder{
-		Input:           input,
-		Output:          pictures,
-		SelectTimestamp: p.SelectTimestamp,
+		input:           input,
+		output:          pictures,
+		selectTimestamp: p.SelectTimestamp,
 	}
 
 	organizer := &Organizer{
-		Input:         pictures,
-		Root:          c.String("target-dir"),
-		DryRun:        c.Bool("dry-run"),
+		input:         pictures,
+		root:          c.String("target-dir"),
+		dryRun:        c.Bool("dry-run"),
 		done:          make(chan bool),
-		TimestampPath: p.TimestampPath,
+		timestampPath: p.TimestampPath,
 	}
 
 	go pictureBuilder.Run()
@@ -81,7 +81,7 @@ func defaultSelectTimestamp(ti *TimeInfo) *time.Time {
 	if t.Before(time.Date(2006, time.January, 1, 0, 0, 0, 0, time.UTC)) {
 		return nil
 	}
-	return &t
+	return t
 }
 
 func defaultTimestampPath(t *time.Time) string {
