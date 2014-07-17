@@ -13,12 +13,12 @@ type Organizer struct {
 	root          string
 	dryRun        bool
 	done          chan bool
-	timestampPath func(t *time.Time) string
+	timestampPath func(*Picture) string
 }
 
 func (o Organizer) Run() {
 	for picture := range o.input {
-		dir := o.timestampPath(picture.Timestamp)
+		dir := o.timestampPath(picture)
 		fname := path.Base(picture.Path)
 		fullPath := path.Join(o.root, dir, fname)
 		if o.dryRun {
