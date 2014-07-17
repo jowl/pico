@@ -8,7 +8,18 @@ import (
 	"github.com/codegangsta/cli"
 )
 
-func Run(args []string) {
+type Pico struct {
+	SelectTimestamp func(*TimeInfo) *time.Time
+	TimestampPath   func(*time.Time) string
+	app             *cli.App
+}
+
+func New() *Pico {
+	pico := &Pico{
+		SelectTimestamp: defaultSelectTimestamp,
+		TimestampPath: defaultTimestampPath,
+	}
+
 	app := cli.NewApp()
 	app.Name = "pico"
 	app.Usage = "picture organizer"
@@ -17,24 +28,26 @@ func Run(args []string) {
 		cli.StringFlag{Name: "target-dir,d", Value: ".", Usage: "target root directory"},
 		cli.BoolFlag{Name: "dry-run,n", Usage: "show which files would have been moved"},
 	}
-	app.Action = runPico
-	app.Run(args)
+	app.Action = func (c *cli.Context) {
+		pico.run(c)
+	}
+
+	pico.app = app
+	return pico
 }
 
-func runPico(c *cli.Context) {
+func (p *Pico) Run(args []string) {
+	p.app.Run(args)
+}
+
+func (p *Pico) run(c *cli.Context) {
 	input := make(chan string)
 	pictures := make(chan *Picture)
 
 	pictureBuilder := &PictureBuilder{
 		Input:  input,
 		Output: pictures,
-		SelectTimestamp: func(ti *TimeInfo) *time.Time {
-			t := ti.DateTimeOriginal
-			if t.Before(time.Date(2006, time.January, 1, 0, 0, 0, 0, time.UTC)) {
-				return nil
-			}
-			return &t
-		},
+		SelectTimestamp: p.SelectTimestamp,
 	}
 
 	organizer := &Organizer{
@@ -42,12 +55,7 @@ func runPico(c *cli.Context) {
 		Root:   c.String("target-dir"),
 		DryRun: c.Bool("dry-run"),
 		done:   make(chan bool),
-		TimestampPath: func(t *time.Time) string {
-			if t == nil {
-				return "unknown"
-			}
-			return t.Format("2006/2006-01") // Mon Jan 2 15:04:05 -0700 MST 2006
-		},
+		TimestampPath: p.TimestampPath,
 	}
 
 	go pictureBuilder.Run()
@@ -66,4 +74,19 @@ func runPico(c *cli.Context) {
 	close(input)
 
 	organizer.Await()
+}
+
+func defaultSelectTimestamp(ti *TimeInfo) *time.Time {
+	t := ti.DateTimeOriginal
+	if t.Before(time.Date(2006, time.January, 1, 0, 0, 0, 0, time.UTC)) {
+		return nil
+	}
+	return &t
+}
+
+func defaultTimestampPath(t *time.Time) string {
+	if t == nil {
+		return "unknown"
+	}
+	return t.Format("2006/2006-01") // Mon Jan 2 15:04:05 -0700 MST 2006
 }
