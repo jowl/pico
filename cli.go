@@ -17,7 +17,7 @@ type Pico struct {
 func New() *Pico {
 	pico := &Pico{
 		SelectTimestamp: defaultSelectTimestamp,
-		TimestampPath: defaultTimestampPath,
+		TimestampPath:   defaultTimestampPath,
 	}
 
 	app := cli.NewApp()
@@ -28,7 +28,7 @@ func New() *Pico {
 		cli.StringFlag{Name: "target-dir,d", Value: ".", Usage: "target root directory"},
 		cli.BoolFlag{Name: "dry-run,n", Usage: "show which files would have been moved"},
 	}
-	app.Action = func (c *cli.Context) {
+	app.Action = func(c *cli.Context) {
 		pico.run(c)
 	}
 
@@ -45,16 +45,16 @@ func (p *Pico) run(c *cli.Context) {
 	pictures := make(chan *Picture)
 
 	pictureBuilder := &PictureBuilder{
-		Input:  input,
-		Output: pictures,
+		Input:           input,
+		Output:          pictures,
 		SelectTimestamp: p.SelectTimestamp,
 	}
 
 	organizer := &Organizer{
-		Input:  pictures,
-		Root:   c.String("target-dir"),
-		DryRun: c.Bool("dry-run"),
-		done:   make(chan bool),
+		Input:         pictures,
+		Root:          c.String("target-dir"),
+		DryRun:        c.Bool("dry-run"),
+		done:          make(chan bool),
 		TimestampPath: p.TimestampPath,
 	}
 
