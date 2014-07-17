@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path"
-	"time"
 )
 
 type Organizer struct {
@@ -41,9 +39,15 @@ func printMove(source, target string) {
 func doMove(source, target string) {
 	var err error
 	if err = os.MkdirAll(path.Dir(target), 0755); err == nil {
-		err = os.Rename(source, target)
+		if _, err = os.Stat(target); os.IsNotExist(err) {
+			err = os.Rename(source, target)
+		} else {
+			err = os.ErrExist
+		}
 	}
 	if err != nil {
-		log.Printf("Error when moving %v: %v", source, err)
+		LogErrorf("Error when moving %v: %v", source, err)
+	} else {
+		LogInfof("Moved %v to %v", source, target)
 	}
 }
