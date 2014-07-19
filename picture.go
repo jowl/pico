@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"time"
 
@@ -29,6 +28,9 @@ type PictureBuilder struct {
 func (p PictureBuilder) Run() {
 	for path := range p.input {
 		timeInfo := extractTimeInfo(path)
+		if timeInfo == nil {
+			continue
+		}
 		p.output <- &Picture{
 			Path:      path,
 			Timestamp: p.selectTimestamp(timeInfo),
@@ -41,7 +43,8 @@ func extractTimeInfo(path string) (timeInfo *TimeInfo) {
 	f, err := os.Open(path)
 	defer f.Close()
 	if err != nil {
-		log.Fatal(err)
+		LogErrorf("Couldn't open file to extract time info: %v", err)
+		return nil
 	}
 	timeInfo = new(TimeInfo)
 	if exifData, err := exif.Decode(f); err == nil {
