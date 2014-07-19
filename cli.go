@@ -25,13 +25,9 @@ func New() *Pico {
 	app.Usage = "picture organizer"
 	app.Version = "0.0.1"
 	app.Flags = []cli.Flag{
-		cli.StringFlag{Name: "target-dir,d", Value: ".", Usage: "target root directory"},
 		cli.BoolFlag{Name: "dry-run,n", Usage: "show which files would have been moved"},
 	}
-	app.Action = func(c *cli.Context) {
-		pico.run(c)
-	}
-
+	app.Commands = []cli.Command{*pico.newOrganizeCommand()}
 	pico.app = app
 	return pico
 }
@@ -40,7 +36,21 @@ func (p Pico) Run(args []string) {
 	p.app.Run(args)
 }
 
-func (p Pico) run(c *cli.Context) {
+func (p Pico) newOrganizeCommand() *cli.Command {
+	return &cli.Command{
+		Name:      "organize",
+		ShortName: "o",
+		Usage:     "organize pictures from stdin/command-line arguments",
+		Action: func(c *cli.Context) {
+			p.organize(c)
+		},
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "target-dir,d", Value: ".", Usage: "target root directory"},
+		},
+	}
+}
+
+func (p Pico) organize(c *cli.Context) {
 	input := make(chan string)
 	pictures := make(chan *Picture)
 
@@ -53,7 +63,7 @@ func (p Pico) run(c *cli.Context) {
 	organizer := &Organizer{
 		input:         pictures,
 		root:          c.String("target-dir"),
-		dryRun:        c.Bool("dry-run"),
+		dryRun:        c.GlobalBool("dry-run"),
 		done:          make(chan bool),
 		timestampPath: p.TimestampPath,
 	}
