@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"os"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 
 type Pico struct {
 	SelectTimestamp func(*TimeInfo) *time.Time
-	TimestampPath   func(*Picture) string
+	TimestampPath   func(*Picture) (string, error)
 	app             *cli.App
 }
 
@@ -94,9 +95,9 @@ func defaultSelectTimestamp(ti *TimeInfo) *time.Time {
 	return t
 }
 
-func defaultTimestampPath(p *Picture) string {
+func defaultTimestampPath(p *Picture) (string, error) {
 	if p.Timestamp == nil {
-		return "unknown"
+		return "", errors.New("Timestamp was nil")
 	}
-	return p.Timestamp.Format("2006/2006-01") // Mon Jan 2 15:04:05 -0700 MST 2006
+	return p.Timestamp.Format("2006/2006-01"), nil // Mon Jan 2 15:04:05 -0700 MST 2006
 }
