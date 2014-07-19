@@ -18,7 +18,7 @@ func (o Organizer) Run() {
 	for picture := range o.input {
 		dir, err := o.timestampPath(picture)
 		if err != nil {
-			LogErrorf("Couldn't calculate new path for %v: %v", picture.Path, err)
+			LogWarningf("Won't move %v: %v", picture.Path, err)
 			continue
 		}
 		fname := path.Base(picture.Path)
@@ -50,7 +50,7 @@ func doMove(source, target string) {
 		}
 	}
 	if err != nil {
-		LogErrorf("Error when moving %v: %v", source, err)
+		LogErrorf("Couldn't move %v: %v", source, err)
 	} else {
 		LogInfof("Moved %v to %v", source, target)
 	}

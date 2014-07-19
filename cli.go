@@ -97,7 +97,7 @@ func defaultSelectTimestamp(ti *TimeInfo) *time.Time {
 
 func defaultTimestampPath(p *Picture) (string, error) {
 	if p.Timestamp == nil {
-		return "", errors.New("Timestamp was nil")
+		return "", errors.New("Timestamp is nil")
 	}
 	return p.Timestamp.Format("2006/2006-01"), nil // Mon Jan 2 15:04:05 -0700 MST 2006
 }
