@@ -89,7 +89,7 @@ func (p Pico) organize(c *cli.Context) {
 
 func defaultSelectTimestamp(ti *TimeInfo) *time.Time {
 	t := ti.DateTimeOriginal
-	if t == nil || t.Before(time.Date(2006, time.January, 1, 0, 0, 0, 0, time.UTC)) {
+	if t != nil && t.After(time.Date(1,1,1,0,0,0,0,time.UTC)) {
 		return nil
 	}
 	return t
