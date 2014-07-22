@@ -70,10 +70,9 @@ func extractTimeInfo(path string) (timeInfo *TimeInfo) {
 }
 
 const exifLayout = "2006:01:02 15:04:05" // Mon Jan 2 15:04:05 -0700 MST 2006
-var localLoc, _ = time.LoadLocation("Local")
 
 func parseExifDateTime(dateTime string) *time.Time {
-	t, err := time.ParseInLocation(exifLayout, dateTime, localLoc)
+	t, err := time.ParseInLocation(exifLayout, dateTime, time.Local)
 	if err != nil {
 		return nil
 	} else {
