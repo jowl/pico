@@ -50,15 +50,23 @@ func extractTimeInfo(path string) (timeInfo *TimeInfo) {
 	if exifData, err := exif.Decode(f); err == nil {
 		if exifDateTime, err := exifData.Get(exif.DateTime); err == nil {
 			timeInfo.DateTime = parseExifDateTime(exifDateTime.StringVal())
+		} else {
+			LogWarningf("Couldn't parse EXIF DateTime: %v", err)
 		}
 
 		if exifDateTimeOriginal, err := exifData.Get(exif.DateTimeOriginal); err == nil {
 			timeInfo.DateTimeOriginal = parseExifDateTime(exifDateTimeOriginal.StringVal())
+		} else {
+			LogWarningf("Couldn't parse EXIF DateTimeOriginal: %v", err)
 		}
 
 		if exifDateTimeDigitized, err := exifData.Get(exif.DateTimeDigitized); err == nil {
 			timeInfo.DateTimeDigitized = parseExifDateTime(exifDateTimeDigitized.StringVal())
+		} else {
+			LogWarningf("Couldn't parse EXIF DateTimeDigitized: %v", err)
 		}
+	} else {
+		LogWarningf("Couldn't parse EXIF data: %v", err)
 	}
 
 	if fileInfo, err := f.Stat(); err == nil {
