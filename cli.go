@@ -88,11 +88,16 @@ func (p Pico) organize(c *cli.Context) {
 }
 
 func defaultSelectTimestamp(ti *TimeInfo) *time.Time {
-	t := ti.DateTimeOriginal
-	if t != nil && t.After(time.Date(1,1,1,0,0,0,0,time.UTC)) {
+	beginningOfTime := time.Date(1,1,1,0,0,0,0,time.UTC)
+	if t := ti.DateTimeOriginal; t != nil && t.After(beginningOfTime) {
+		return t
+	} else if t := ti.DateTimeDigitized; t != nil && t.After(beginningOfTime) {
+		return t
+	} else if t := ti.DateTime; t != nil && t.After(beginningOfTime) {
+		return t
+	} else {
 		return nil
 	}
-	return t
 }
 
 func defaultTimestampPath(p *Picture) (string, error) {
