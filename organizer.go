@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path"
 )
@@ -32,6 +34,29 @@ func (o Organizer) Await() {
 	<-o.done
 }
 
+func hasSameContent(path1, path2 string) (bool, error) {
+	b1 := make([]byte, 10)
+	b2 := make([]byte, 10)
+	f1, _ := os.Open(path1)
+	f2, _ := os.Open(path2)
+	var e1, e2 error
+	for {
+		_, e1 = f1.Read(b1)
+		_, e2 = f2.Read(b2)
+		if e1 != e2 || !bytes.Equal(b1, b2) {
+			if e1 != nil {
+				return false, e1
+			} else {
+				return false, e2
+			}
+		}
+		if e1 == io.EOF {
+			break
+		}
+	}
+	return true, nil;
+}
+
 func move(source, target string, dryRun bool) {
 	var err error
 	if _, statErr := os.Stat(target); os.IsNotExist(statErr) {
@@ -45,9 +70,12 @@ func move(source, target string, dryRun bool) {
 			fmt.Printf("%v would be moved to %v\n", source, target)
 		}
 	} else if (err == nil) {
-		err = os.ErrExist
+		if same, sameErr := hasSameContent(source, target); sameErr == nil && same {
+			err = fmt.Errorf("file already exists, but has the same content as %v", source)
+		} else {
+			err = os.ErrExist
+		}
 	}
-
 
 	if err != nil {
 		LogErrorf("Couldn't move %v to %v: %v", source, target, err)
