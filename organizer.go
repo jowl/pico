@@ -44,7 +44,7 @@ func move(source, target string, dryRun bool) {
 		} else {
 			fmt.Printf("%v would be moved to %v\n", source, target)
 		}
-	} else {
+	} else if (err == nil) {
 		err = os.ErrExist
 	}
 
