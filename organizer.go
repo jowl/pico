@@ -50,6 +50,6 @@ func move(source, target string, dryRun bool) {
 
 
 	if err != nil {
-		LogErrorf("Couldn't move %v: %v", source, err)
+		LogErrorf("Couldn't move %v to %v: %v", source, target, err)
 	}
 }
